@@ -1,0 +1,38 @@
+<html>
+
+<head>
+    <title>Express Test for Fraglate</title>
+    <script src="//cdn.bootcss.com/jquery/2.2.3/jquery.js"></script>
+</head>
+
+<body>
+    <div>
+        <%= _t('locale hint') %>
+        <select id='locale_combo' onchange='on_change_locale()'>
+            <option><%= _t('select locale') %></option>
+            <option value="en">English</option>
+            <option value="zh-cn">中文</option>
+            <option value="zh-tw">中文正體</option>
+        </select>
+    </div>
+    <ul>
+        <% for (var i=0; i < data.length; i++) {%>
+            <li>
+                <%= _t(data[i]) %>
+            </li>
+        <% } %>
+    </ul>
+
+    <script>
+        function on_change_locale() {
+            var combobox = $('#locale_combo');
+            var value = combobox.find("option:selected").val();
+            $.post('/api/locale', { locale: value }, function (data) {
+                console.log(data);
+                location.reload();
+            });
+        }
+    </script>
+</body>
+
+</html>

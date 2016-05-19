@@ -1,0 +1,14 @@
+{
+    "select locale": "請選擇語言",
+    "locale hint": "當前<locale>: <chs>",
+    "locale": "語言",
+    "chs": "中文正體",
+    "eng": "英文",
+    "life": "生活",
+    "choco": "巧克力",
+    "a box": "一盒",
+    "answer": "答案",
+    "FGquote": "<life>像<a box><choco>",
+    "calc": "1+1的<answer>是{{1+1}}",
+    "foo": "{{ (function (s) { var r = ''; for (var i in s) { r += String.fromCharCode(s[i].charCodeAt() + 32); } return r; })('HELLO') }} world"
+}
