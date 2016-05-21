@@ -1,6 +1,6 @@
 {
   "name": "fraglate",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "node.js Internationalization Module with Support for Interpolation in Locale Files",
   "main": "index.js",
   "author": "Adam Cavendish",
@@ -18,11 +18,13 @@
     "express": "^4.13.4",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
+    "gulp-concat": "^2.6.0",
     "gulp-mocha": "^2.2.0",
+    "gulp-sourcemaps": "^1.6.0",
     "mocha": "^2.4.5"
   },
   "dependencies": {
-    "async": "^2.0.0-rc.5",
-    "node.extend": "^1.1.5"
+    "asyncawait": "^1.0.3",
+    "bluebird": "^3.4.0"
   }
 }

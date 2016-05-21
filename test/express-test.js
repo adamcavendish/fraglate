@@ -16,7 +16,9 @@ app.set('views', __dirname);
 app.set('view engine', 'ejs');
 app.engine('html', ejs.renderFile);
 
-app.use(new Fraglate({}).as_middleware());
+app.use(new Fraglate({}, function() {
+    console.log('Fraglate init finished');
+}).as_middleware());
 
 app.get('/', (req, res) => {
     res.render('express-test.ejs', {

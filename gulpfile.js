@@ -25,5 +25,5 @@ gulp.task('test', ['default', 'build-test'], function () {
   return gulp.src("dist/test/*.js", {read:false})
     .pipe(mocha());
 */
-  return gulp.src('test/test.js').pipe(mocha());
+  return gulp.src('dist/test/test.js').pipe(mocha());
 });
