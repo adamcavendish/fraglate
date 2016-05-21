@@ -1,16 +1,13 @@
 var gulp = require('gulp');
 var rename = require('gulp-rename');
-var concat = require('gulp-concat');
 var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
 
 gulp.task('default', function () {
   return gulp.src('src/*.js')
     .pipe(sourcemaps.init())
-    .pipe(concat('all.js'))
     .pipe(uglify())
     .pipe(sourcemaps.write())
-    .pipe(rename('all.min.js'))
     .pipe(gulp.dest('dist/src'));
 });
 

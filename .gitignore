@@ -39,7 +39,5 @@ jspm_packages
 # gulped output
 dist/*
 !dist/
-dist/src/*
 !dist/src/
-!dist/src/all.min.js
 
