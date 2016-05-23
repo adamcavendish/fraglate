@@ -1,6 +1,6 @@
 {
   "name": "fraglate",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "node.js Internationalization Module with Support for Interpolation in Locale Files",
   "main": "dist/src/index.js",
   "author": "Adam Cavendish",
@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "asyncawait": "^1.0.3",
-    "bluebird": "^3.4.0"
+    "bluebird": "^3.4.0",
+    "lodash": "^4.13.1"
   }
 }

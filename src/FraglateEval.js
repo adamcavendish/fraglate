@@ -2,7 +2,7 @@
 
 var FraglateEval = (function() {
     var fraglate = require('./index');
-    var _ = require('./util');
+    var _ = require('lodash');
 
     var FraglateEval = function(fraglate) {
         this.fraglate = fraglate;

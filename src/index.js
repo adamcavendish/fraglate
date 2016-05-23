@@ -2,8 +2,8 @@
 
 var FraglateClass = (function() {
     var FraglateEval = require('./FraglateEval');
-    var _ = require('./util');
 
+    var _ = require('lodash');
     var __async__ = require('asyncawait/async');
     var __await__ = require('asyncawait/await');
     var bluebird = require('bluebird');
@@ -26,7 +26,8 @@ var FraglateClass = (function() {
     function __is_exist_locale(locales, lang, region) {
         if (_.isNil(region) && !_.isNil(locales[lang])) {
             return true;
-        } else if (!_.isNil(region) && !_.isNil(locales[lang]) && !_.isNil(locales[lang]['region'][region])) {
+        } else if (!_.isNil(region) && !_.isNil(locales[lang])
+                   && !_.isNil(_.get(locales, [lang, 'region', region]))) {
             return true;
         }
         return false;
@@ -64,7 +65,7 @@ var FraglateClass = (function() {
         if (_.isNil(callback)) {
             this.load_all_localesSync(this.config['locale_path']);
         } else {
-            this.load_all_locales(this.config['locale_path'], callback);
+            this.load_all_locales(this.config['locale_path'], callback.bind(this));
         }
 
         // init globals
@@ -123,26 +124,24 @@ var FraglateClass = (function() {
         var lang_region = __get_lang_region(filename.replace(/\.json$/g, ''));
         var lang = lang_region[0];
         var region = lang_region[1];
-        var content = JSON.parse(filecontent);
+        var content = null;
+        try {
+            content = JSON.parse(filecontent);
+        } catch (e) {
+            console.error("'" + filename + "', JSON.parse error: " + e.toString());
+            content = null;
+        }
         if (_.isNil(region)) {
             if (_.isNil(this.locales[lang])) {
-                this.locales[lang] = {
-                    'data': content,
-                    'region': {}
-                };
+                this.locales[lang] = { 'data': content, 'region': {} };
             } else {
-                this.locales[lang]['data'] = content;
+                _.set(this.locales, [lang, 'data'], content);
             }
         } else {
             if (_.isNil(this.locales[lang])) {
-                this.locales[lang] = {
-                    'data': '',
-                    'region': {}
-                };
-                this.locales[lang]['region'][region] = content;
-            } else {
-                this.locales[lang]['region'][region] = content;
+                this.locales[lang] = { 'data': '', 'region': {} };
             }
+            _.set(this.locales, [lang, 'region', region], content);
         }
     };
 
@@ -180,7 +179,8 @@ var FraglateClass = (function() {
 
         // check cookie
         var cookiename = this.config['cookiename'];
-        if (!_.isNil(cookiename) && !_.isNil(req.cookies) && !_.isNil(req.cookies[cookiename])) {
+        if (!_.isNil(cookiename) && !_.isNil(req.cookies)
+            && !_.isNil(req.cookies[cookiename])) {
             var cookie_locale = req.cookies[cookiename];
             var lang_region = __get_lang_region(cookie_locale);
             if (__is_exist_locale(this.locales, lang_region[0], lang_region[1])) {
@@ -201,14 +201,16 @@ var FraglateClass = (function() {
                 var lang = lang_region[0];
                 var region = lang_region[1];
                 var locales_lang = this.locales[lang];
-                var locales_region = this.locales[lang]['region'][region];
+                var locales_region = _.get(this.locales, [lang, 'region', region]);
                 if (_.isNil(region) && !_.isNil(locales_lang)) {
                     bestGuess = [lang, null];
                     break;
-                } else if (!_.isNil(region) && !_.isNil(locales_lang) && !_.isNil(locales_region)) {
+                } else if (!_.isNil(region) && !_.isNil(locales_lang)
+                           && !_.isNil(locales_region)) {
                     bestGuess = [lang, region];
                     break;
-                } else if (!_.isNil(region) && !_.isNil(locales_lang) && _.isNil(locales_region)) {
+                } else if (!_.isNil(region) && !_.isNil(locales_lang)
+                           && _.isNil(locales_region)) {
                     fallbackGuess = [lang, null];
                 }
             }
@@ -253,11 +255,11 @@ var FraglateClass = (function() {
     Fraglate.prototype.translate = function(key, lang, region, context) {
         var fe = new Fraglate.EVAL(this);
         var localeunit = ( (_.isNull(region))
-                           ? (this.locales[lang]['data'][key])
-                           : (this.locales[lang]['region'][region][key]));
-        if (typeof localeunit === 'string') {
+                           ? (_.get(this.locales, [lang, 'data', key]))
+                           : (_.get(this.locales, [lang, 'region', region, key])));
+        if (typeof(localeunit) === 'string') {
             return fe.eval(localeunit, lang, region, context);
-        } else if (typeof localeunit === 'undefined') {
+        } else if (_.isNil(localeunit)) {
             console.error('locale: ' + locale.toString()
                           + ', no translation to key: "'
                           + key.toString() + '"');
