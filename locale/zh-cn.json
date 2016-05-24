@@ -10,5 +10,7 @@
   "answer": "答案",
   "FGquote": "<life>像<a box><choco>",
   "calc": "1+1的<answer>是{{1+1}}",
-  "foo": "{{ (function (s) { var r = ''; for (var i in s) { r += String.fromCharCode(s[i].charCodeAt() + 32); } return r; })('HELLO') }} world"
+  "foo": "{{ (function (s) { var r = ''; for (var i in s) { r += String.fromCharCode(s[i].charCodeAt() + 32); } return r; })('HELLO') }} world",
+  "hint": "这个没有被翻译",
+  ":": "："
 }

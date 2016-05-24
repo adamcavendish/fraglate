@@ -10,5 +10,7 @@
   "answer": "answer",
   "FGquote": "<life> is like <a box> of <choco>",
   "calc": "The <answer> to 1+1 is {{1+1}}",
-  "foo": "{{ (function (s) { var r = ''; for (var i in s) { r += String.fromCharCode(s[i].charCodeAt() + 32); } return r; })('HELLO') }} world"
+  "foo": "{{ (function (s) { var r = ''; for (var i in s) { r += String.fromCharCode(s[i].charCodeAt() + 32); } return r; })('HELLO') }} world",
+  "hint": "This is unspecified in locale file",
+  ":": ":"
 }

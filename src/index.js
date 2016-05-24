@@ -231,7 +231,7 @@ var FraglateClass = (function() {
         if (!__is_exist_locale(this.locales, lang, region)) {
             console.error("Locale '" + locale_str + "' is not configured!");
             console.error("Locale available: " + JSON.stringify(this.locales));
-            return '';
+            return null;
         }
         return this.translate(key, lang, region, context);
     };
@@ -247,7 +247,7 @@ var FraglateClass = (function() {
         var region = lang_region[1];
         if (!__is_exist_locale(this.locales, lang, region)) {
             console.error("Locale '" + locale_str + "' is not configured!");
-            return '';
+            return null;
         }
         return new Fraglate.EVAL(this).eval(str, lang, region, context);
     };
@@ -260,16 +260,17 @@ var FraglateClass = (function() {
         if (typeof(localeunit) === 'string') {
             return fe.eval(localeunit, lang, region, context);
         } else if (_.isNil(localeunit)) {
-            console.error('locale: ' + locale.toString()
+            console.error('locale: ' + __construct_lang_region(lang, region)
                           + ', no translation to key: "'
                           + key.toString() + '"');
+            return null;
         } else {
-            console.error('locale: ' + locale.toString()
+            console.error('locale: ' + __construct_lang_region(lang, region)
                           + ', translation to \''
                           + (typeof localeunit).toString()
                           + '\' is not supported!');
+            return null;
         }
-        return null;
     };
 
     return Fraglate;
