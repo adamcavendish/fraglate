@@ -1,6 +1,6 @@
 'use strict';
 
-var Fraglate = require('../../src/index.js');
+var Fraglate = require('../src/index.js');
 var process = require('process');
 var path = require('path');
 var chai = require('chai');
