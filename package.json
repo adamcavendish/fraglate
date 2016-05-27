@@ -1,6 +1,6 @@
 {
   "name": "fraglate",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "node.js Internationalization Module with Support for Interpolation in Locale Files",
   "main": "src/index.js",
   "author": "Adam Cavendish",
