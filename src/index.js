@@ -41,7 +41,8 @@ var FraglateClass = (function() {
   }
 
   function Fraglate(config, callback) {
-    this.config = Object.assign({}, Fraglate.DEFAULT_CONFIG, config);
+    var self = this;
+    self.config = Object.assign({}, Fraglate.DEFAULT_CONFIG, config);
     /*
        Locale Data Structure:
        {
@@ -64,16 +65,18 @@ var FraglateClass = (function() {
        if 'en.json' does not exist, but 'en-us.json' exists,
        guaranteed that `locales['en']['data'] === ''`
      */
-    this.locales = {};
+    self.locales = {};
     if (_.isNil(callback)) {
-      this.load_all_localesSync(this.config['locale_path']);
+      self.load_all_localesSync(self.config['locale_path']);
     } else {
-      this.load_all_locales(this.config['locale_path'], callback.bind(this));
+      self.load_all_locales(self.config['locale_path'], function(err) {
+        callback(err, self);
+      });
     }
 
     // init globals
-    global[this.config['translate']] = this._t.bind(this);
-    global[this.config['eval']] = this._e.bind(this);
+    global[self.config['translate']] = self._t.bind(self);
+    global[self.config['eval']] = self._e.bind(self);
   }
 
   Fraglate.EVAL = FraglateEval;
@@ -111,19 +114,21 @@ var FraglateClass = (function() {
 
   // as_middleware will provide each request with property: 'locale' as best matched locale
   Fraglate.prototype.as_middleware = function() {
+    var self = this;
     return function(req, res, next) {
       if (!req.locale) {
-        this.guess_language(req);
+        self.guess_language(req);
       }
-      this.express_request = req;
+      self.express_request = req;
 
       if (typeof next === 'function') {
         return next();
       }
-    }.bind(this);
+    };
   };
 
   Fraglate.prototype.process_locale_content = function(filename, filecontent) {
+    var self = this;
     var lang_region = __get_lang_region(filename.replace(/\.json$/g, ''));
     var lang = lang_region[0];
     var region = lang_region[1];
@@ -135,20 +140,21 @@ var FraglateClass = (function() {
       content = null;
     }
     if (_.isNil(region)) {
-      if (_.isNil(this.locales[lang])) {
-        this.locales[lang] = { 'data': content, 'region': {} };
+      if (_.isNil(self.locales[lang])) {
+        self.locales[lang] = { 'data': content, 'region': {} };
       } else {
-        _.set(this.locales, [lang, 'data'], content);
+        _.set(self.locales, [lang, 'data'], content);
       }
     } else {
-      if (_.isNil(this.locales[lang])) {
-        this.locales[lang] = { 'data': '', 'region': {} };
+      if (_.isNil(self.locales[lang])) {
+        self.locales[lang] = { 'data': '', 'region': {} };
       }
-      _.set(this.locales, [lang, 'region', region], content);
+      _.set(self.locales, [lang, 'region', region], content);
     }
   };
 
   Fraglate.prototype.load_all_locales = function(locale_path, callback) {
+    var self = this;
     var load_all_locales_async = __async__(function(locale_path) {
       var files = __await__(fs.readdirAsync(locale_path));
       var file_content_pairs = __await__(
@@ -158,42 +164,44 @@ var FraglateClass = (function() {
             function(filename) {
               return (
                 (!_.startsWith(filename, '.')) // ignore hidden files
-             && (path.extname(filename) === this.config['locale_extension'])); // ignore unexpected files
-            }.bind(this)),
+             && (path.extname(filename) === self.config['locale_extension'])); // ignore unexpected files
+            }),
           function(filename) {
             return fs.readFileAsync(path.join(locale_path, filename))
                      .then(function(content) {
                        return [filename, content];
-                     }.bind(this))
+                     })
                      .catch(function(err) {
                        throw err;
-                     }.bind(this));
-          }.bind(this)));
+                     });
+          }));
       file_content_pairs.map(function(file_content) {
         var filename = file_content[0];
         var filecontent = file_content[1];
-        this.process_locale_content(filename, filecontent);
-      }.bind(this));
-    }.bind(this));
+        self.process_locale_content(filename, filecontent);
+      });
+    });
 
     load_all_locales_async(locale_path)
-      .then(callback.bind(this))
-      .catch(callback.bind(this));
+      .then(callback)
+      .catch(callback);
   };
 
   Fraglate.prototype.load_all_localesSync = function(locale_path) {
+    var self = this;
     var files = fs.readdirSync(locale_path);
     files = _.filter(files, function(filename) {
       return !(_.startsWith(filename, '.'));
     });
     _.forEach(files, function(filename) {
       var content = fs.readFileSync(path.join(locale_path, filename));
-      this.process_locale_content(filename, content);
-    }.bind(this));
+      self.process_locale_content(filename, content);
+    });
   };
 
   Fraglate.prototype.get_all_locales_available = function () {
-    return _.flatMap(this.locales, function (lang_value, lang) {
+    var self = this;
+    return _.flatMap(self.locales, function (lang_value, lang) {
       var regions = _.get(lang_value, ['region']);
       var ret = _.map(regions, function (region_value, region) {
         var lang_region = __construct_lang_region(lang, region);
@@ -207,17 +215,18 @@ var FraglateClass = (function() {
   };
 
   Fraglate.prototype.guess_language = function(req) {
+    var self = this;
     if (!(typeof req === 'object')) {
       return;
     }
 
     // check cookie
-    var cookiename = this.config['cookiename'];
+    var cookiename = self.config['cookiename'];
     if (!_.isNil(cookiename) && !_.isNil(req.cookies)
       && !_.isNil(req.cookies[cookiename])) {
         var cookie_locale = req.cookies[cookiename];
         var lang_region = __get_lang_region(cookie_locale);
-        if (__is_exist_locale(this.locales, lang_region[0], lang_region[1])) {
+        if (__is_exist_locale(self.locales, lang_region[0], lang_region[1])) {
           req.locale = __construct_lang_region(lang_region[0], lang_region[1]);
           return;
         }
@@ -229,13 +238,13 @@ var FraglateClass = (function() {
       var pref_langs = Fraglate.GET_ACCEPTED_LANGUAGES_FROM_HEADER(acc_langs);
       var bestGuess = null,
           fallbackGuess = null;
-      var defaultLocale = __get_lang_region(this.config['default_locale']);
+      var defaultLocale = __get_lang_region(self.config['default_locale']);
       for (var i = 0; i < pref_langs.length; ++i) {
         var lang_region = __get_lang_region(pref_langs[i][0]);
         var lang = lang_region[0];
         var region = lang_region[1];
-        var locales_lang = this.locales[lang];
-        var locales_region = _.get(this.locales, [lang, 'region', region]);
+        var locales_lang = self.locales[lang];
+        var locales_region = _.get(self.locales, [lang, 'region', region]);
         if (_.isNil(region) && !_.isNil(locales_lang)) {
           bestGuess = [lang, null];
           break;
@@ -254,43 +263,46 @@ var FraglateClass = (function() {
   };
 
   Fraglate.prototype._t = function(key, locale_str, context) {
+    var self = this;
     if (_.isNil(locale_str)) {
-      locale_str = ( (!_.isNil(this.express_request))
-                   ? (this.express_request.locale)
-                   : (this.config['default_locale']) );
+      locale_str = ( (!_.isNil(self.express_request))
+                   ? (self.express_request.locale)
+                   : (self.config['default_locale']) );
     }
     var lang_region = __get_lang_region(locale_str);
     var lang = lang_region[0];
     var region = lang_region[1];
-    if (!__is_exist_locale(this.locales, lang, region)) {
+    if (!__is_exist_locale(self.locales, lang, region)) {
       console.error("Locale '" + locale_str + "' is not configured!");
-      console.error("Locale available: " + JSON.stringify(this.locales));
+      console.error("Locale available: " + JSON.stringify(self.locales));
       return null;
     }
-    return this.translate(key, lang, region, context);
+    return self.translate(key, lang, region, context);
   };
 
   Fraglate.prototype._e = function(str, locale_str, context) {
+    var self = this;
     if (_.isNil(locale_str)) {
-      locale_str = ( (!_.isNil(this.express_request))
-                   ? (this.express_request.locale)
-                   : (this.config['default_locale']) );
+      locale_str = ( (!_.isNil(self.express_request))
+                   ? (self.express_request.locale)
+                   : (self.config['default_locale']) );
     }
     var lang_region = __get_lang_region(locale_str);
     var lang = lang_region[0];
     var region = lang_region[1];
-    if (!__is_exist_locale(this.locales, lang, region)) {
+    if (!__is_exist_locale(self.locales, lang, region)) {
       console.error("Locale '" + locale_str + "' is not configured!");
       return null;
     }
-    return new Fraglate.EVAL(this).eval(str, lang, region, context);
+    return new Fraglate.EVAL(self).eval(str, lang, region, context);
   };
 
   Fraglate.prototype.translate = function(key, lang, region, context) {
-    var fe = new Fraglate.EVAL(this);
+    var self = this;
+    var fe = new Fraglate.EVAL(self);
     var localeunit = ( (_.isNull(region))
-                     ? (_.get(this.locales, [lang, 'data', key]))
-                     : (_.get(this.locales, [lang, 'region', region, key])));
+                     ? (_.get(self.locales, [lang, 'data', key]))
+                     : (_.get(self.locales, [lang, 'region', region, key])));
     if (typeof(localeunit) === 'string') {
       return fe.eval(localeunit, lang, region, context);
     } else if (_.isNil(localeunit)) {
